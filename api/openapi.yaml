@@ -1,0 +1,1293 @@
+openapi: 3.1.0
+info:
+  contact:
+    email: support@xperiences.ai
+    name: Xperiences API Support
+    url: https://xperiences.ai/support
+  description: API for VR mentoring experiences
+  title: Xperiences API
+  version: 0.1.0
+  x-logo:
+    url: https://xperiences.ai/logo.png
+servers:
+- description: Current server
+  url: /
+- description: Production server
+  url: https://api.xperiencesapi.com
+- description: Staging server
+  url: https://staging.xperiencesapi.com
+security:
+- bearerAuth: []
+paths:
+  /health:
+    get:
+      description: |-
+        Health check endpoint.
+
+        Returns:
+            Health status and API version
+      operationId: health_check_health_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                title: Response Health Check Health Get
+          description: Successful Response
+      summary: Health Check
+      tags:
+      - health
+  /health/database:
+    get:
+      description: |-
+        Database health check endpoint.
+
+        Args:
+            db: Database session (injected via DbSession alias)
+
+        Returns:
+            Database connection status
+      operationId: database_health_check_health_database_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                title: Response Database Health Check Health Database Get
+          description: Successful Response
+      summary: Database Health Check
+      tags:
+      - health
+  /api/v1/agents/:
+    get:
+      description: |-
+        List all available agents.
+
+        Args:
+            agent_service: Injected AgentService instance
+            auth: Authentication dependency
+            skip: Number of agents to skip
+            limit: Maximum number of agents to return
+
+        Returns:
+            List of agents
+      operationId: list_agents_api_v1_agents__get
+      parameters:
+      - description: Number of agents to skip
+        explode: true
+        in: query
+        name: skip
+        required: false
+        schema:
+          default: 0
+          description: Number of agents to skip
+          minimum: 0
+          title: Skip
+          type: integer
+        style: form
+      - description: Max number of agents
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 100
+          description: Max number of agents
+          maximum: 100
+          title: Limit
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Agent'
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: List Agents
+      tags:
+      - agents
+    post:
+      description: Create a new agent.
+      operationId: create_agent_api_v1_agents__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentCreate'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Agent
+      tags:
+      - agents
+  /api/v1/agents/{agent_id}:
+    delete:
+      description: Delete an agent.
+      operationId: delete_agent_api_v1_agents__agent_id__delete
+      parameters:
+      - explode: false
+        in: path
+        name: agent_id
+        required: true
+        schema:
+          title: Agent Id
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Delete Agent
+      tags:
+      - agents
+    get:
+      description: Get an agent by ID.
+      operationId: get_agent_api_v1_agents__agent_id__get
+      parameters:
+      - explode: false
+        in: path
+        name: agent_id
+        required: true
+        schema:
+          title: Agent Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Agent
+      tags:
+      - agents
+    put:
+      description: |-
+        Update an agent.
+
+        Args:
+            agent_id: Agent ID
+            agent_update: Agent update data
+            agent_service: Injected AgentService instance
+            agent: Current agent model from dependency
+            auth: Authentication dependency
+
+        Returns:
+            Updated agent
+      operationId: update_agent_api_v1_agents__agent_id__put
+      parameters:
+      - explode: false
+        in: path
+        name: agent_id
+        required: true
+        schema:
+          title: Agent Id
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentUpdate'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Update Agent
+      tags:
+      - agents
+  /api/v1/agents/{agent_id}/conversations:
+    get:
+      description: List all conversations for an agent.
+      operationId: list_conversations_api_v1_agents__agent_id__conversations_get
+      parameters:
+      - explode: false
+        in: path
+        name: agent_id
+        required: true
+        schema:
+          title: Agent Id
+          type: string
+        style: simple
+      - description: Number of conversations to skip
+        explode: true
+        in: query
+        name: skip
+        required: false
+        schema:
+          default: 0
+          description: Number of conversations to skip
+          minimum: 0
+          title: Skip
+          type: integer
+        style: form
+      - description: Max conversations
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 100
+          description: Max conversations
+          maximum: 100
+          title: Limit
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Conversation'
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: List Conversations
+      tags:
+      - agents
+    post:
+      description: Create a new conversation for an agent.
+      operationId: create_conversation_api_v1_agents__agent_id__conversations_post
+      parameters:
+      - explode: false
+        in: path
+        name: agent_id
+        required: true
+        schema:
+          title: Agent Id
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationCreate'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conversation'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Conversation
+      tags:
+      - agents
+  /api/v1/agents/{agent_id}/conversations/{conversation_id}:
+    get:
+      description: Get conversation details by ID.
+      operationId: get_conversation_api_v1_agents__agent_id__conversations__conversation_id__get
+      parameters:
+      - explode: false
+        in: path
+        name: agent_id
+        required: true
+        schema:
+          title: Agent Id
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: conversation_id
+        required: true
+        schema:
+          title: Conversation Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conversation'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Conversation
+      tags:
+      - agents
+  /api/v1/agents/{agent_id}/conversations/{conversation_id}/messages:
+    get:
+      description: List all messages for a conversation.
+      operationId: list_messages_api_v1_agents__agent_id__conversations__conversation_id__messages_get
+      parameters:
+      - explode: false
+        in: path
+        name: agent_id
+        required: true
+        schema:
+          title: Agent Id
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: conversation_id
+        required: true
+        schema:
+          title: Conversation Id
+          type: string
+        style: simple
+      - description: Number of messages to skip
+        explode: true
+        in: query
+        name: skip
+        required: false
+        schema:
+          default: 0
+          description: Number of messages to skip
+          minimum: 0
+          title: Skip
+          type: integer
+        style: form
+      - description: Max messages to return
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 100
+          description: Max messages to return
+          maximum: 100
+          title: Limit
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Message'
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: List Messages
+      tags:
+      - agents
+  /api/v1/agents/{agent_id}/text:
+    post:
+      description: Process text input for an agent.
+      operationId: process_text_api_v1_agents__agent_id__text_post
+      parameters:
+      - explode: false
+        in: path
+        name: agent_id
+        required: true
+        schema:
+          title: Agent Id
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TextRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TextResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Process Text
+      tags:
+      - agents
+  /api/v1/agents/{agent_id}/speech:
+    post:
+      description: Process speech input and return response.
+      operationId: process_speech_api_v1_agents__agent_id__speech_post
+      parameters:
+      - explode: false
+        in: path
+        name: agent_id
+        required: true
+        schema:
+          title: Agent Id
+          type: string
+        style: simple
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_process_speech_api_v1_agents__agent_id__speech_post'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Process Speech
+      tags:
+      - agents
+  /api/v1/chat/chats:
+    post:
+      description: Create a new chat.
+      operationId: create_chat_api_v1_chat_chats_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationCreate'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Chat
+      tags:
+      - chat
+  /api/v1/chat/chats/{chat_id}:
+    get:
+      description: Get a chat by ID.
+      operationId: get_chat_api_v1_chat_chats__chat_id__get
+      parameters:
+      - explode: false
+        in: path
+        name: chat_id
+        required: true
+        schema:
+          title: Chat Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Chat
+      tags:
+      - chat
+  /api/v1/chat/chats/{chat_id}/messages:
+    post:
+      description: Create a new message in a chat.
+      operationId: create_message_api_v1_chat_chats__chat_id__messages_post
+      parameters:
+      - explode: false
+        in: path
+        name: chat_id
+        required: true
+        schema:
+          title: Chat Id
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageCreate'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Message
+      tags:
+      - chat
+  /api/v1/users:
+    post:
+      description: Create a new user.
+      operationId: create_user_api_v1_users_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create User
+      tags:
+      - users
+  /api/v1/users/{user_id}:
+    delete:
+      description: Delete a user.
+      operationId: delete_user_api_v1_users__user_id__delete
+      parameters:
+      - explode: false
+        in: path
+        name: user_id
+        required: true
+        schema:
+          title: User Id
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Delete User
+      tags:
+      - users
+    get:
+      description: Get a user by ID.
+      operationId: get_user_api_v1_users__user_id__get
+      parameters:
+      - explode: false
+        in: path
+        name: user_id
+        required: true
+        schema:
+          title: User Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get User
+      tags:
+      - users
+    put:
+      description: Update a user.
+      operationId: update_user_api_v1_users__user_id__put
+      parameters:
+      - explode: false
+        in: path
+        name: user_id
+        required: true
+        schema:
+          title: User Id
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Update User
+      tags:
+      - users
+components:
+  schemas:
+    Agent:
+      description: Schema for agent response.
+      example:
+        assistant_id: assistant_id
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        configuration:
+          key: ""
+        name: name
+        description: description
+        created_at: 2000-01-23T04:56:07.000+00:00
+        id: id
+        status: initializing
+        prompt_template: prompt_template
+      properties:
+        name:
+          description: Name of the agent
+          title: Name
+          type: string
+        description:
+          nullable: true
+          type: string
+        id:
+          description: Unique identifier for the agent
+          title: Id
+          type: string
+        status:
+          $ref: '#/components/schemas/AgentStatus'
+        assistant_id:
+          nullable: true
+          type: string
+        prompt_template:
+          nullable: true
+          type: string
+        configuration:
+          additionalProperties: true
+          description: Additional configuration for the agent
+          title: Configuration
+          type: object
+        created_at:
+          description: Creation timestamp
+          format: date-time
+          title: Created At
+          type: string
+        updated_at:
+          description: Last update timestamp
+          format: date-time
+          title: Updated At
+          type: string
+      required:
+      - configuration
+      - created_at
+      - id
+      - name
+      - status
+      - updated_at
+      title: Agent
+    AgentCreate:
+      description: Schema for creating a new agent.
+      example:
+        configuration:
+          key: ""
+        name: name
+        description: description
+        prompt_template: prompt_template
+      properties:
+        name:
+          description: Name of the agent
+          title: Name
+          type: string
+        description:
+          nullable: true
+          type: string
+        prompt_template:
+          nullable: true
+          type: string
+        configuration:
+          additionalProperties: true
+          description: Additional configuration for the agent
+          title: Configuration
+          type: object
+      required:
+      - name
+      title: AgentCreate
+    AgentResponse:
+      description: |-
+        Response schema for agent operations.
+        Extends the base Agent schema with additional response-specific fields.
+      example:
+        assistant_id: asst_abc123
+        configuration: {}
+        created_at: 2024-03-28T12:00:00Z
+        description: A helpful customer service agent
+        id: 123e4567-e89b-12d3-a456-426614174000
+        name: Customer Service Agent
+        prompt_template: You are a customer service agent...
+        status: active
+        updated_at: 2024-03-28T12:00:00Z
+      properties:
+        name:
+          description: Name of the agent
+          title: Name
+          type: string
+        description:
+          nullable: true
+          type: string
+        id:
+          description: Unique identifier for the agent
+          title: Id
+          type: string
+        status:
+          $ref: '#/components/schemas/AgentStatus'
+        assistant_id:
+          nullable: true
+          type: string
+        prompt_template:
+          nullable: true
+          type: string
+        configuration:
+          additionalProperties: true
+          description: Additional configuration for the agent
+          title: Configuration
+          type: object
+        created_at:
+          description: Creation timestamp
+          format: date-time
+          title: Created At
+          type: string
+        updated_at:
+          description: Last update timestamp
+          format: date-time
+          title: Updated At
+          type: string
+        error_message:
+          nullable: true
+          type: string
+      required:
+      - configuration
+      - created_at
+      - id
+      - name
+      - status
+      - updated_at
+      title: AgentResponse
+    AgentStatus:
+      description: Enum for agent status.
+      enum:
+      - initializing
+      - active
+      - inactive
+      - error
+      title: AgentStatus
+      type: string
+    AgentUpdate:
+      description: Schema for updating an agent.
+      example:
+        configuration:
+          key: ""
+        name: name
+        description: description
+        status: initializing
+        prompt_template: prompt_template
+      properties:
+        name:
+          nullable: true
+          type: string
+        description:
+          nullable: true
+          type: string
+        status:
+          $ref: '#/components/schemas/AgentStatus'
+        prompt_template:
+          nullable: true
+          type: string
+        configuration:
+          additionalProperties: true
+          nullable: true
+          type: object
+      title: AgentUpdate
+    Body_process_speech_api_v1_agents__agent_id__speech_post:
+      properties:
+        audio_file:
+          format: binary
+          title: Audio File
+          type: string
+      required:
+      - audio_file
+      title: Body_process_speech_api_v1_agents__agent_id__speech_post
+    Conversation:
+      description: Schema for conversation response.
+      example:
+        thread_id: thread_id
+        is_active: true
+        agent_id: agent_id
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        meta_data:
+          key: ""
+        created_at: 2000-01-23T04:56:07.000+00:00
+        id: id
+        title: title
+      properties:
+        title:
+          nullable: true
+          type: string
+        meta_data:
+          additionalProperties: true
+          description: Additional meta_data for the conversation
+          title: Meta Data
+          type: object
+        id:
+          description: Unique identifier for the conversation
+          title: Id
+          type: string
+        agent_id:
+          description: ID of the agent this conversation belongs to
+          title: Agent Id
+          type: string
+        thread_id:
+          nullable: true
+          type: string
+        is_active:
+          description: Whether the conversation is active
+          title: Is Active
+          type: boolean
+        created_at:
+          description: Creation timestamp
+          format: date-time
+          title: Created At
+          type: string
+        updated_at:
+          description: Last update timestamp
+          format: date-time
+          title: Updated At
+          type: string
+      required:
+      - agent_id
+      - created_at
+      - id
+      - is_active
+      - updated_at
+      title: Conversation
+    ConversationCreate:
+      description: Schema for creating a new conversation.
+      example:
+        meta_data:
+          key: ""
+        title: title
+      properties:
+        title:
+          nullable: true
+          type: string
+        meta_data:
+          additionalProperties: true
+          description: Additional meta_data for the conversation
+          title: Meta Data
+          type: object
+      title: ConversationCreate
+    ConversationResponse:
+      description: Response model for chat completions.
+      example:
+        function_calls:
+        - key: ""
+        - key: ""
+        message: message
+      properties:
+        message:
+          title: Message
+          type: string
+        function_calls:
+          items:
+            additionalProperties: true
+            type: object
+          nullable: true
+          type: array
+      required:
+      - message
+      title: ConversationResponse
+    HTTPValidationError:
+      example:
+        detail:
+        - msg: msg
+          loc:
+          - ValidationError_loc_inner
+          - ValidationError_loc_inner
+          type: type
+        - msg: msg
+          loc:
+          - ValidationError_loc_inner
+          - ValidationError_loc_inner
+          type: type
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+      title: HTTPValidationError
+    Message:
+      description: Schema for message response.
+      example:
+        role: system
+        conversation_id: conversation_id
+        meta_data:
+          key: ""
+        created_at: 2000-01-23T04:56:07.000+00:00
+        id: id
+        content: content
+      properties:
+        role:
+          $ref: '#/components/schemas/MessageRole'
+        content:
+          description: Content of the message
+          title: Content
+          type: string
+        meta_data:
+          additionalProperties: true
+          description: Additional meta_data for the message
+          title: Meta Data
+          type: object
+        id:
+          description: Unique identifier for the message
+          title: Id
+          type: string
+        conversation_id:
+          description: ID of the conversation this message belongs to
+          title: Conversation Id
+          type: string
+        created_at:
+          description: Creation timestamp
+          format: date-time
+          title: Created At
+          type: string
+      required:
+      - content
+      - conversation_id
+      - created_at
+      - id
+      - role
+      title: Message
+    MessageCreate:
+      description: Schema for creating a new message.
+      example:
+        role: system
+        meta_data:
+          key: ""
+        content: content
+      properties:
+        role:
+          $ref: '#/components/schemas/MessageRole'
+        content:
+          description: Content of the message
+          title: Content
+          type: string
+        meta_data:
+          additionalProperties: true
+          description: Additional meta_data for the message
+          title: Meta Data
+          type: object
+      required:
+      - content
+      - role
+      title: MessageCreate
+    MessageResponse:
+      description: |-
+        Response schema for message operations (like speech-to-text or text-to-speech).
+        Used specifically for audio/text conversion responses.
+      example:
+        audio_url: https://storage.example.com/audio/response.mp3
+        text: Hello! How can I help you today?
+      properties:
+        text:
+          description: Text response from the agent
+          title: Text
+          type: string
+        audio_url:
+          nullable: true
+          type: string
+      required:
+      - text
+      title: MessageResponse
+    MessageRole:
+      description: Enum for message roles.
+      enum:
+      - system
+      - user
+      - assistant
+      - function
+      title: MessageRole
+      type: string
+    TextRequest:
+      description: Schema for text processing request.
+      example:
+        conversation_id: conversation_id
+        meta_data:
+          key: ""
+        text: text
+      properties:
+        conversation_id:
+          nullable: true
+          type: string
+        text:
+          description: Text input from the user
+          title: Text
+          type: string
+        meta_data:
+          additionalProperties: true
+          description: Additional meta_data for the request
+          title: Meta Data
+          type: object
+      required:
+      - text
+      title: TextRequest
+    TextResponse:
+      description: Schema for text processing response.
+      example:
+        meta_data:
+          key: ""
+        message_id: message_id
+        text: text
+      properties:
+        message_id:
+          description: ID of the created message
+          title: Message Id
+          type: string
+        text:
+          description: Text response from the agent
+          title: Text
+          type: string
+        meta_data:
+          additionalProperties: true
+          description: Additional meta_data for the response
+          title: Meta Data
+          type: object
+      required:
+      - message_id
+      - meta_data
+      - text
+      title: TextResponse
+    UserCreate:
+      description: Schema for creating a new user.
+      example:
+        password: password
+        full_name: full_name
+        is_active: true
+        is_superuser: false
+        email: email
+      properties:
+        email:
+          description: User's email address
+          format: email
+          title: Email
+          type: string
+        full_name:
+          description: User's full name
+          title: Full Name
+          type: string
+        is_active:
+          default: true
+          description: Whether the user is active
+          title: Is Active
+          type: boolean
+        is_superuser:
+          default: false
+          description: Whether the user is a superuser
+          title: Is Superuser
+          type: boolean
+        password:
+          description: User's password
+          minLength: 8
+          title: Password
+          type: string
+      required:
+      - email
+      - full_name
+      - password
+      title: UserCreate
+    UserResponse:
+      description: Schema for user response.
+      example:
+        full_name: full_name
+        is_active: true
+        is_superuser: false
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        created_at: 2000-01-23T04:56:07.000+00:00
+        id: id
+        email: email
+      properties:
+        email:
+          description: User's email address
+          format: email
+          title: Email
+          type: string
+        full_name:
+          description: User's full name
+          title: Full Name
+          type: string
+        is_active:
+          default: true
+          description: Whether the user is active
+          title: Is Active
+          type: boolean
+        is_superuser:
+          default: false
+          description: Whether the user is a superuser
+          title: Is Superuser
+          type: boolean
+        id:
+          description: User's unique identifier
+          title: Id
+          type: string
+        created_at:
+          description: When the user was created
+          format: date-time
+          title: Created At
+          type: string
+        updated_at:
+          description: When the user was last updated
+          format: date-time
+          title: Updated At
+          type: string
+      required:
+      - created_at
+      - email
+      - full_name
+      - id
+      - updated_at
+      title: UserResponse
+    UserUpdate:
+      description: Schema for updating a user.
+      example:
+        password: password
+        full_name: full_name
+        is_active: true
+        is_superuser: true
+        email: email
+      properties:
+        email:
+          format: email
+          nullable: true
+          type: string
+        full_name:
+          nullable: true
+          type: string
+        password:
+          minLength: 8
+          nullable: true
+          type: string
+        is_active:
+          nullable: true
+          type: boolean
+        is_superuser:
+          nullable: true
+          type: boolean
+      title: UserUpdate
+    ValidationError:
+      example:
+        msg: msg
+        loc:
+        - ValidationError_loc_inner
+        - ValidationError_loc_inner
+        type: type
+      properties:
+        loc:
+          items:
+            $ref: '#/components/schemas/ValidationError_loc_inner'
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ValidationError_loc_inner:
+      anyOf:
+      - type: string
+      - type: integer
+  securitySchemes:
+    bearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
+
